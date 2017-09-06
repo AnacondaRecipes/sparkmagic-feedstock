@@ -25,7 +25,7 @@ requirements:
         - notebook >=4.2
         - ipykernel >=4.2.2
         - ipywidgets >=5.0.0
-        - ipython >=4.0.2
+        - ipython
         - widgetsnbextension
         - hdijupyterutils
         - autovizwidget
