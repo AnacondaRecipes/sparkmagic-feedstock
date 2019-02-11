@@ -1,0 +1,506 @@
+diff --git a/Dockerfile.jupyter b/Dockerfile.jupyter
+index eb078b9..597dc34 100644
+--- a/Dockerfile.jupyter
++++ b/Dockerfile.jupyter
+@@ -31,7 +31,6 @@ RUN sed -i 's/localhost/spark/g' /home/$NB_USER/.sparkmagic/config.json
+ RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
+ RUN jupyter-kernelspec install --user $(pip show sparkmagic | grep Location | cut -d" " -f2)/sparkmagic/kernels/sparkkernel
+ RUN jupyter-kernelspec install --user $(pip show sparkmagic | grep Location | cut -d" " -f2)/sparkmagic/kernels/pysparkkernel
+-RUN jupyter-kernelspec install --user $(pip show sparkmagic | grep Location | cut -d" " -f2)/sparkmagic/kernels/pyspark3kernel
+ RUN jupyter-kernelspec install --user $(pip show sparkmagic | grep Location | cut -d" " -f2)/sparkmagic/kernels/sparkrkernel
+ RUN jupyter serverextension enable --py sparkmagic
+ 
+@@ -42,4 +41,3 @@ RUN rm -rf hdijupyterutils/ autovizwidget/ sparkmagic/
+ CMD ["start-notebook.sh", "--NotebookApp.iopub_data_rate_limit=1000000000"]
+ 
+ USER $NB_USER
+-
+diff --git a/Dockerfile.spark b/Dockerfile.spark
+index ef18165..a12a9dd 100644
+--- a/Dockerfile.spark
++++ b/Dockerfile.spark
+@@ -4,7 +4,6 @@ RUN apt-get update && apt-get install -yq --no-install-recommends --force-yes \
+     git \
+     openjdk-7-jdk \
+     maven \
+-    python2.7 \
+     python3.4 \
+     r-base \
+     r-base-core && \
+@@ -15,8 +14,7 @@ RUN pip install --upgrade setuptools
+ ENV LIVY_BUILD_VERSION livy-server-0.3.0
+ ENV LIVY_APP_PATH /apps/$LIVY_BUILD_VERSION
+ ENV LIVY_BUILD_PATH /apps/build/livy
+-ENV PYSPARK_PYTHON python2.7
+-ENV PYSPARK3_PYTHON python3.4
++ENV PYSPARK_PYTHON python3.4
+ 
+ RUN mkdir -p /apps/build && \
+     cd /apps/build && \
+@@ -34,4 +32,3 @@ RUN mkdir -p /apps/build && \
+ EXPOSE 8998
+ 
+ CMD ["/apps/livy-server-0.3.0/bin/livy-server"]
+-
+diff --git a/README.md b/README.md
+index 04a6023..6c64e5b 100644
+--- a/README.md
++++ b/README.md
+@@ -16,7 +16,7 @@ The Sparkmagic project includes a set of magics for interactively running Spark
+ * Run Spark code in multiple languages against any remote Spark cluster through Livy
+ * Automatic SparkContext (`sc`) and HiveContext (`sqlContext`) creation
+ * Easily execute SparkSQL queries with the `%%sql` magic
+-* Automatic visualization of SQL queries in the PySpark, PySpark3, Spark and SparkR kernels; use an easy visual interface to interactively construct visualizations, no code required
++* Automatic visualization of SQL queries in the PySpark, Spark and SparkR kernels; use an easy visual interface to interactively construct visualizations, no code required
+ * Easy access to Spark application information and logs (`%%info` magic)
+ * Ability to capture the output of SQL queries as Pandas dataframes to interact with other Python libraries (e.g. matplotlib)
+ * Authenticate to Livy via Basic Access authentication or via Kerberos
+@@ -42,21 +42,20 @@ See [Pyspark](examples/Pyspark%20Kernel.ipynb) and [Spark](examples/Spark%20Kern
+ 
+ 2. Make sure that ipywidgets is properly installed by running
+ 
+-        jupyter nbextension enable --py --sys-prefix widgetsnbextension 
+-        
++        jupyter nbextension enable --py --sys-prefix widgetsnbextension
++
+ 3. (Optional) Install the wrapper kernels. Do `pip show sparkmagic` and it will show the path where `sparkmagic` is installed at. `cd` to that location and do:
+ 
+         jupyter-kernelspec install sparkmagic/kernels/sparkkernel
+         jupyter-kernelspec install sparkmagic/kernels/pysparkkernel
+-        jupyter-kernelspec install sparkmagic/kernels/pyspark3kernel
+         jupyter-kernelspec install sparkmagic/kernels/sparkrkernel
+-        
++
+ 4. (Optional) Modify the configuration file at ~/.sparkmagic/config.json. Look at the [example_config.json](sparkmagic/example_config.json)
+ 
+ 5. (Optional) Enable the server extension so that clusters can be programatically changed:
+ 
+         jupyter serverextension enable --py sparkmagic
+-        
++
+ ## Authentication Methods
+ 
+ Sparkmagic supports:
+@@ -133,7 +132,7 @@ Reply Body example:
+ 
+ ## Architecture
+ 
+-Sparkmagic uses Livy, a REST server for Spark, to remotely execute all user code. 
++Sparkmagic uses Livy, a REST server for Spark, to remotely execute all user code.
+ The library then automatically collects the output of your code as plain text or a JSON document, displaying the results to you as formatted text or as a Pandas dataframe as appropriate.
+ 
+ ![Architecture](screenshots/diagram.png)
+@@ -157,16 +156,16 @@ In practice this means that you must use Python for client-side data manipulatio
+ 
+ ## Contributing
+ 
+-We welcome contributions from everyone. 
++We welcome contributions from everyone.
+ If you've made an improvement to our code, please send us a [pull request](https://github.com/jupyter-incubator/sparkmagic/pulls).
+ 
+ To dev install, execute the following:
+ 
+         git clone https://github.com/jupyter-incubator/sparkmagic
+-        pip install -e hdijupyterutils 
++        pip install -e hdijupyterutils
+         pip install -e autovizwidget
+         pip install -e sparkmagic
+-        
++
+ and optionally follow steps 3 and 4 above.
+ 
+ To run unit tests, run:
+diff --git a/sparkmagic/setup.py b/sparkmagic/setup.py
+index 3bcfeee..39928bd 100644
+--- a/sparkmagic/setup.py
++++ b/sparkmagic/setup.py
+@@ -6,7 +6,6 @@ PACKAGES            = ['sparkmagic',
+                        'sparkmagic/livyclientlib',
+                        'sparkmagic/magics',
+                        'sparkmagic/kernels/pysparkkernel',
+-                       'sparkmagic/kernels/pyspark3kernel',
+                        'sparkmagic/kernels/sparkkernel',
+                        'sparkmagic/kernels/sparkrkernel',
+                        'sparkmagic/kernels/wrapperkernel',
+@@ -59,11 +58,9 @@ setup(name=NAME,
+       packages=PACKAGES,
+       include_package_data=True,
+       package_data={'sparkmagic': ['kernels/pysparkkernel/kernel.js',
+-				   'kernels/pyspark3kernel/kernel.js',
+ 				   'kernels/sparkkernel/kernel.js',
+ 				   'kernels/sparkrkernel/kernel.js',
+            'kernels/pysparkkernel/kernel.json',
+-				   'kernels/pyspark3kernel/kernel.json',
+ 				   'kernels/sparkkernel/kernel.json',
+ 				   'kernels/sparkrkernel/kernel.json']},
+       classifiers=[
+@@ -91,4 +88,3 @@ setup(name=NAME,
+           'tornado>=4',
+           'requests_kerberos>=0.8.0'
+       ])
+-
+diff --git a/sparkmagic/sparkmagic/kernels/pyspark3kernel/__init__.py b/sparkmagic/sparkmagic/kernels/pyspark3kernel/__init__.py
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/sparkmagic/sparkmagic/kernels/pyspark3kernel/kernel.js b/sparkmagic/sparkmagic/kernels/pyspark3kernel/kernel.js
+deleted file mode 100644
+index e7fdfeb..0000000
+--- a/sparkmagic/sparkmagic/kernels/pyspark3kernel/kernel.js
++++ /dev/null
+@@ -1,7 +0,0 @@
+-define(['base/js/namespace'], function(IPython){
+-        var onload = function() {
+-            IPython.CodeCell.config_defaults.highlight_modes['magic_text/x-sql'] = {'reg':[/^%%sql/]};
+-        }
+-
+-        return { onload: onload }
+-    })
+\ No newline at end of file
+diff --git a/sparkmagic/sparkmagic/kernels/pyspark3kernel/kernel.json b/sparkmagic/sparkmagic/kernels/pyspark3kernel/kernel.json
+deleted file mode 100644
+index 7ddada4..0000000
+--- a/sparkmagic/sparkmagic/kernels/pyspark3kernel/kernel.json
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{"argv":["python","-m","sparkmagic.kernels.pyspark3kernel.pyspark3kernel", "-f", "{connection_file}"],
+- "display_name":"PySpark3"
+-}
+diff --git a/sparkmagic/sparkmagic/kernels/pyspark3kernel/pyspark3kernel.py b/sparkmagic/sparkmagic/kernels/pyspark3kernel/pyspark3kernel.py
+deleted file mode 100644
+index d4d92b7..0000000
+--- a/sparkmagic/sparkmagic/kernels/pyspark3kernel/pyspark3kernel.py
++++ /dev/null
+@@ -1,28 +0,0 @@
+-# Copyright (c) 2015  aggftw@gmail.com
+-# Distributed under the terms of the Modified BSD License.
+-from sparkmagic.utils.constants import LANG_PYTHON3
+-from sparkmagic.kernels.wrapperkernel.sparkkernelbase import SparkKernelBase
+-
+-
+-class PySpark3Kernel(SparkKernelBase):
+-    def __init__(self, **kwargs):
+-        implementation = 'PySpark3'
+-        implementation_version = '1.0'
+-        language = 'no-op'
+-        language_version = '0.1'
+-        language_info = {
+-            'name': 'pyspark3',
+-            'mimetype': 'text/x-python',
+-            'codemirror_mode': {'name': 'python', 'version': 3},
+-            'pygments_lexer': 'python3'
+-        }
+-
+-        session_language = LANG_PYTHON3
+-
+-        super(PySpark3Kernel, self).__init__(implementation, implementation_version, language, language_version,
+-                                             language_info, session_language, **kwargs)
+-
+-
+-if __name__ == '__main__':
+-    from ipykernel.kernelapp import IPKernelApp
+-    IPKernelApp.launch_instance(kernel_class=PySpark3Kernel)
+diff --git a/sparkmagic/sparkmagic/livyclientlib/sparkstorecommand.py b/sparkmagic/sparkmagic/livyclientlib/sparkstorecommand.py
+index f07adae..735cc54 100644
+--- a/sparkmagic/sparkmagic/livyclientlib/sparkstorecommand.py
++++ b/sparkmagic/sparkmagic/livyclientlib/sparkstorecommand.py
+@@ -51,8 +51,6 @@ class SparkStoreCommand(Command):
+     def to_command(self, kind, spark_context_variable_name):
+         if kind == constants.SESSION_KIND_PYSPARK:
+             return self._pyspark_command(spark_context_variable_name)
+-        elif kind == constants.SESSION_KIND_PYSPARK3:
+-            return self._pyspark_command(spark_context_variable_name, False)
+         elif kind == constants.SESSION_KIND_SPARK:
+             return self._scala_command(spark_context_variable_name)
+         elif kind == constants.SESSION_KIND_SPARKR:
+@@ -119,4 +117,4 @@ class SparkStoreCommand(Command):
+             self._coerce == other._coerce
+ 
+     def __ne__(self, other):
+-        return not (self == other)
+\ No newline at end of file
++        return not (self == other)
+diff --git a/sparkmagic/sparkmagic/livyclientlib/sqlquery.py b/sparkmagic/sparkmagic/livyclientlib/sqlquery.py
+index 241900d..fc4e54c 100644
+--- a/sparkmagic/sparkmagic/livyclientlib/sqlquery.py
++++ b/sparkmagic/sparkmagic/livyclientlib/sqlquery.py
+@@ -11,7 +11,7 @@ from .exceptions import DataFrameParseException, BadUserDataException
+ class SQLQuery(ObjectWithGuid):
+     def __init__(self, query, samplemethod=None, maxrows=None, samplefraction=None, spark_events=None, coerce=None):
+         super(SQLQuery, self).__init__()
+-        
++
+         if samplemethod is None:
+             samplemethod = conf.default_samplemethod()
+         if maxrows is None:
+@@ -37,8 +37,6 @@ class SQLQuery(ObjectWithGuid):
+ 
+     def to_command(self, kind, sql_context_variable_name):
+         if kind == constants.SESSION_KIND_PYSPARK:
+-            return self._pyspark_command(sql_context_variable_name)
+-        elif kind == constants.SESSION_KIND_PYSPARK3:
+             return self._pyspark_command(sql_context_variable_name, False)
+         elif kind == constants.SESSION_KIND_SPARK:
+             return self._scala_command(sql_context_variable_name)
+diff --git a/sparkmagic/sparkmagic/tests/test_configuration.py b/sparkmagic/sparkmagic/tests/test_configuration.py
+index 52ca0e2..63ddb58 100644
+--- a/sparkmagic/sparkmagic/tests/test_configuration.py
++++ b/sparkmagic/sparkmagic/tests/test_configuration.py
+@@ -9,7 +9,7 @@ from sparkmagic.utils.constants import AUTH_BASIC, NO_AUTH
+ 
+ def _setup():
+     conf.override_all({})
+-    
++
+ 
+ @with_setup(_setup)
+ def test_configuration_override_base64_password():
+@@ -71,10 +71,3 @@ def test_configuration_raise_error_for_bad_base64_password():
+     conf.override_all(overrides)
+     conf.override(conf.livy_session_startup_timeout_seconds.__name__, 1)
+     conf.base64_kernel_python_credentials()
+-
+-
+-@with_setup(_setup)
+-def test_share_config_between_pyspark_and_pyspark3():
+-    kpc = { 'username': 'U', 'password': 'P', 'base64_password': 'cGFzc3dvcmQ=', 'url': 'L', 'auth': AUTH_BASIC }
+-    overrides = { conf.kernel_python_credentials.__name__: kpc }
+-    assert_equals(conf.base64_kernel_python3_credentials(), conf.base64_kernel_python_credentials())
+diff --git a/sparkmagic/sparkmagic/tests/test_kernels.py b/sparkmagic/sparkmagic/tests/test_kernels.py
+index c0fbe5c..4cc19c0 100644
+--- a/sparkmagic/sparkmagic/tests/test_kernels.py
++++ b/sparkmagic/sparkmagic/tests/test_kernels.py
+@@ -1,7 +1,6 @@
+ from sparkmagic.utils.constants import LANG_PYTHON, LANG_PYTHON3, LANG_SCALA, LANG_R
+ from sparkmagic.kernels.sparkkernel.sparkkernel import SparkKernel
+ from sparkmagic.kernels.pysparkkernel.pysparkkernel import PySparkKernel
+-from sparkmagic.kernels.pyspark3kernel.pyspark3kernel import PySpark3Kernel
+ from sparkmagic.kernels.sparkrkernel.sparkrkernel import SparkRKernel
+ 
+ 
+@@ -11,12 +10,6 @@ class TestPyparkKernel(PySparkKernel):
+         super(TestPyparkKernel, self).__init__(**kwargs)
+ 
+ 
+-class TestPypark3Kernel(PySpark3Kernel):
+-    def __init__(self):
+-        kwargs = {"testing": True}
+-        super(TestPypark3Kernel, self).__init__(**kwargs)
+-
+-
+ class TestSparkKernel(SparkKernel):
+     def __init__(self):
+         kwargs = {"testing": True}
+@@ -44,21 +37,6 @@ def test_pyspark_kernel_configs():
+     }
+ 
+ 
+-def test_pyspark3_kernel_configs():
+-    kernel = TestPypark3Kernel()
+-    assert kernel.session_language == LANG_PYTHON3
+-
+-    assert kernel.implementation == 'PySpark3'
+-    assert kernel.language == 'no-op'
+-    assert kernel.language_version == '0.1'
+-    assert kernel.language_info == {
+-        'name': 'pyspark3',
+-        'mimetype': 'text/x-python',
+-        'codemirror_mode': {'name': 'python', 'version': 3},
+-        'pygments_lexer': 'python3'
+-    }
+-
+-
+ def test_spark_kernel_configs():
+     kernel = TestSparkKernel()
+ 
+@@ -88,4 +66,3 @@ def test_sparkr_kernel_configs():
+         'pygments_lexer': 'r',
+         'codemirror_mode': 'text/x-rsrc'
+     }
+-
+diff --git a/sparkmagic/sparkmagic/tests/test_sparkstorecommand.py b/sparkmagic/sparkmagic/tests/test_sparkstorecommand.py
+index 9d79b46..726ad4d 100644
+--- a/sparkmagic/sparkmagic/tests/test_sparkstorecommand.py
++++ b/sparkmagic/sparkmagic/tests/test_sparkstorecommand.py
+@@ -33,15 +33,6 @@ def test_to_command_pyspark():
+     sparkcommand._pyspark_command.assert_called_with(variable_name)
+ 
+ 
+-@with_setup(_setup, _teardown)
+-def test_to_command_pyspark3():
+-    variable_name = "var_name"
+-    sparkcommand = SparkStoreCommand(variable_name)
+-    sparkcommand._pyspark_command = MagicMock(return_value=MagicMock())
+-    sparkcommand.to_command("pyspark3", variable_name)
+-    sparkcommand._pyspark_command.assert_called_with(variable_name, False)
+-
+-
+ @with_setup(_setup, _teardown)
+ def test_to_command_scala():
+     variable_name = "var_name"
+@@ -161,7 +152,7 @@ def test_scala_livy_sampling_options():
+     sparkcommand = SparkStoreCommand(variable_name, samplemethod='sample', samplefraction=0.33, maxrows=3234)
+     assert_equals(sparkcommand._scala_command(variable_name),
+                   Command('{}.toJSON.sample(false, 0.33).take(3234).foreach(println)'.format(variable_name)))
+-    
++
+     sparkcommand = SparkStoreCommand(variable_name, samplemethod=None, maxrows=100)
+     assert_equals(sparkcommand._scala_command(variable_name),
+                   Command('{}.toJSON.take(100).foreach(println)'.format(variable_name)))
+@@ -190,7 +181,7 @@ def test_r_livy_sampling_options():
+     sparkcommand = SparkStoreCommand(variable_name, samplemethod=None, maxrows=100)
+     assert_equals(sparkcommand._r_command(variable_name),
+                   Command('for ({} in (jsonlite::toJSON(take({},100)))) {{cat({})}}'\
+-                          .format(LONG_RANDOM_VARIABLE_NAME, variable_name, 
++                          .format(LONG_RANDOM_VARIABLE_NAME, variable_name,
+                                   LONG_RANDOM_VARIABLE_NAME)))
+ 
+ @with_setup(_setup, _teardown)
+@@ -206,7 +197,7 @@ def test_execute_code():
+     session = MagicMock()
+     session.kind = "pyspark"
+     result = sparkcommand.execute(session)
+-    
++
+     sparkcommand.to_command.assert_called_once_with(session.kind, variable_name)
+     sparkcommand.to_command.return_value.execute.assert_called_once_with(session)
+ 
+@@ -222,4 +213,3 @@ def test_unicode():
+                                   LONG_RANDOM_VARIABLE_NAME, conf.pyspark_dataframe_encoding())))
+     assert_equals(sparkcommand._scala_command(variable_name),
+                   Command(u'{}.toJSON.take(120).foreach(println)'.format(variable_name)))
+-
+diff --git a/sparkmagic/sparkmagic/tests/test_sqlquery.py b/sparkmagic/sparkmagic/tests/test_sqlquery.py
+index 3c3e165..7976e5c 100644
+--- a/sparkmagic/sparkmagic/tests/test_sqlquery.py
++++ b/sparkmagic/sparkmagic/tests/test_sqlquery.py
+@@ -13,7 +13,7 @@ from sparkmagic.livyclientlib.exceptions import BadUserDataException
+ 
+ def _setup():
+     pass
+-    
++
+ 
+ def _teardown():
+     pass
+@@ -25,15 +25,6 @@ def test_to_command_pyspark():
+     sqlquery = SQLQuery("Query")
+     sqlquery._pyspark_command = MagicMock(return_value=MagicMock())
+     sqlquery.to_command("pyspark", variable_name)
+-    sqlquery._pyspark_command.assert_called_with(variable_name)
+-
+-
+-@with_setup(_setup, _teardown)
+-def test_to_command_pyspark3():
+-    variable_name = "var_name"
+-    sqlquery = SQLQuery("Query")
+-    sqlquery._pyspark_command = MagicMock(return_value=MagicMock())
+-    sqlquery.to_command("pyspark3", variable_name)
+     sqlquery._pyspark_command.assert_called_with(variable_name, False)
+ 
+ 
+diff --git a/sparkmagic/sparkmagic/utils/configuration.py b/sparkmagic/sparkmagic/utils/configuration.py
+index 85bc80c..368c566 100644
+--- a/sparkmagic/sparkmagic/utils/configuration.py
++++ b/sparkmagic/sparkmagic/utils/configuration.py
+@@ -10,7 +10,7 @@ from hdijupyterutils.configuration import with_override
+ 
+ from .constants import HOME_PATH, CONFIG_FILE, MAGICS_LOGGER_NAME, LIVY_KIND_PARAM, \
+     LANG_SCALA, LANG_PYTHON, LANG_PYTHON3, LANG_R, \
+-    SESSION_KIND_SPARKR, SESSION_KIND_SPARK, SESSION_KIND_PYSPARK, SESSION_KIND_PYSPARK3, CONFIGURABLE_RETRY
++    SESSION_KIND_SPARKR, SESSION_KIND_SPARK, SESSION_KIND_PYSPARK, CONFIGURABLE_RETRY
+ from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
+ import sparkmagic.utils.constants as constants
+ 
+@@ -18,7 +18,7 @@ import sparkmagic.utils.constants as constants
+ d = {}
+ path = join_paths(HOME_PATH, CONFIG_FILE)
+ 
+-    
++
+ def override(config, value):
+     _override(d, path, config, value)
+ 
+@@ -35,10 +35,8 @@ _with_override = with_override(d, path)
+ def get_livy_kind(language):
+     if language == LANG_SCALA:
+         return SESSION_KIND_SPARK
+-    elif language == LANG_PYTHON:
++    elif language in [LANG_PYTHON, LANG_PYTHON3]:
+         return SESSION_KIND_PYSPARK
+-    elif language == LANG_PYTHON3:
+-        return SESSION_KIND_PYSPARK3
+     elif language == LANG_R:
+         return SESSION_KIND_SPARKR
+     else:
+@@ -48,13 +46,13 @@ def get_livy_kind(language):
+ def get_auth_value(username, password):
+     if username == '' and password == '':
+         return constants.NO_AUTH
+-    
++
+     return constants.AUTH_BASIC
+ 
+ 
+ # Configs
+ 
+- 
++
+ def get_session_properties(language):
+     properties = copy.deepcopy(session_configs())
+     properties[LIVY_KIND_PARAM] = get_livy_kind(language)
+@@ -69,20 +67,10 @@ def session_configs():
+ @_with_override
+ def kernel_python_credentials():
+     return {u'username': u'', u'base64_password': u'', u'url': u'http://localhost:8998', u'auth': constants.NO_AUTH}
+-    
+-    
+-def base64_kernel_python_credentials():
+-    return _credentials_override(kernel_python_credentials)
+ 
+ 
+-# No one's gonna use pyspark and pyspark3 notebook on different endpoints. Reuse the old config.
+-@_with_override
+-def kernel_python3_credentials():
+-    return kernel_python_credentials()
+-
+-
+-def base64_kernel_python3_credentials():
+-    return base64_kernel_python_credentials()
++def base64_kernel_python_credentials():
++    return _credentials_override(kernel_python_credentials)
+ 
+ 
+ @_with_override
+@@ -90,7 +78,7 @@ def kernel_scala_credentials():
+     return {u'username': u'', u'base64_password': u'', u'url': u'http://localhost:8998', u'auth': constants.NO_AUTH}
+ 
+ 
+-def base64_kernel_scala_credentials():        
++def base64_kernel_scala_credentials():
+     return _credentials_override(kernel_scala_credentials)
+ 
+ @_with_override
+@@ -198,7 +186,7 @@ def pyspark_dataframe_encoding():
+ @_with_override
+ def heartbeat_refresh_seconds():
+     return 30
+-    
++
+ 
+ @_with_override
+ def heartbeat_retry_seconds():
+diff --git a/sparkmagic/sparkmagic/utils/constants.py b/sparkmagic/sparkmagic/utils/constants.py
+index 00ab9e4..0a5c0d5 100644
+--- a/sparkmagic/sparkmagic/utils/constants.py
++++ b/sparkmagic/sparkmagic/utils/constants.py
+@@ -9,9 +9,8 @@ CONFIG_FILE = os.environ.get("SPARKMAGIC_CONF_FILE", "config.json")
+ 
+ SESSION_KIND_SPARK = "spark"
+ SESSION_KIND_PYSPARK = "pyspark"
+-SESSION_KIND_PYSPARK3 = "pyspark3"
+ SESSION_KIND_SPARKR = "sparkr"
+-SESSION_KINDS_SUPPORTED = [SESSION_KIND_SPARK, SESSION_KIND_PYSPARK, SESSION_KIND_PYSPARK3, SESSION_KIND_SPARKR]
++SESSION_KINDS_SUPPORTED = [SESSION_KIND_SPARK, SESSION_KIND_PYSPARK, SESSION_KIND_SPARKR]
+ 
+ LIBRARY_LOADED_EVENT = "notebookLoaded"
+ CLUSTER_CHANGE_EVENT = "notebookClusterChange"
