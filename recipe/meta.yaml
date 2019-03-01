@@ -1,21 +1,17 @@
-{% set name = "sparkmagic" %}
-{% set version = "0.12.6" %}
-{% set hash_type = "sha256" %}
-{% set hash_val = "044bc04e683438d68cfc90ff2f6180a243dc4f9dd2477b0ea9405cc65bb40c1b" %}
-
 package:
-    name: {{ name }}
-    version: {{ version }}
+    name: sparkmagic
+    version: 0.12.7
 
 source:
-    fn: {{ name }}-{{ version }}.tar.gz
-    url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    {{ hash_type }}: {{ hash_val }}
+    git_url: https://github.com/jupyter-incubator/sparkmagic.git
+    git_rev: 437ee02c359de5e85846eeae79f99977f198fa3b  # 0.12.7
+    patches:
+        0001-Remove-PySpark3-kernel.patch
 
 build:
-    number: 1000
+    number: 1001
     skip: true  # [win]
-    script: python setup.py install
+    script: cd sparkmagic && python setup.py install
 
 requirements:
     host:
@@ -35,8 +31,16 @@ requirements:
         - requests-kerberos
 
 test:
+    source_files:
+        - sparkmagic/sparkmagic/tests
+    requires:
+        - nose
+        - mock
+        - tornado
     imports:
         - sparkmagic
+    commands:
+        - nosetests sparkmagic/sparkmagic/tests
 
 about:
     home: https://github.com/jupyter-incubator/sparkmagic
