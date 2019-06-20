@@ -9,7 +9,7 @@ source:
         0001-Remove-PySpark3-kernel.patch
 
 build:
-    number: 1001
+    number: 1002
     skip: true  # [win]
     script: cd sparkmagic && python setup.py install
 
@@ -19,7 +19,7 @@ requirements:
     run:
         - python
         - notebook >=4.2
-        - ipykernel >=4.2.2
+        - ipykernel >=4.2.2,<4.10.0
         - ipywidgets >=5.0.0
         - ipython
         - widgetsnbextension
