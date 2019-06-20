@@ -19,7 +19,7 @@ requirements:
     run:
         - python
         - notebook >=4.2
-        - ipykernel==4.9.0
+        - ipykernel >=4.2.2,<4.10.0
         - ipywidgets >=5.0.0
         - ipython
         - widgetsnbextension
