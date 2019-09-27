@@ -35,6 +35,13 @@ requirements:
 test:
   imports:
     - sparkmagic
+  source_files:
+    - sparkmagic/sparkmagic/tests
+  requires:
+    - nose
+    - mock
+  commands:
+    - nosetests sparkmagic/sparkmagic/tests
 
 about:
   home: https://github.com/jupyter-incubator/sparkmagic
