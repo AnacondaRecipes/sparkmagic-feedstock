@@ -18,6 +18,8 @@ requirements:
   host:
     - pip
     - python >=3.6
+    - wheel
+    - setuptools
   run:
     - autovizwidget >=0.6
     - hdijupyterutils >=0.6
@@ -31,6 +33,8 @@ requirements:
     - requests
     - requests-kerberos >=0.8.0
     - tornado >=4
+    - nose
+    - mock
 
 test:
   imports:
@@ -40,7 +44,9 @@ test:
   requires:
     - nose
     - mock
+    - pip
   commands:
+    - pip check
     - nosetests sparkmagic/sparkmagic/tests
 
 about:
@@ -49,6 +55,8 @@ about:
   license_family: BSD
   summary: Jupyter magics and kernels for working with remote Spark clusters
   license_file: LICENSE.md
+  doc_url: https://github.com/jupyter-incubator/sparkmagic#readme
+  dev_url: https://github.com/jupyter-incubator/sparkmagic/tree/master/sparkmagic
 
 extra:
   recipe-maintainers:
