@@ -45,8 +45,6 @@ test:
     - nose
     - mock
     - pip
-  imports:
-    - sparkmagic
   commands:
     - pip check
     - nosetests sparkmagic/sparkmagic/tests
