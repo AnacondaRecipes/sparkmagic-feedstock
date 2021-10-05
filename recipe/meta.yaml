@@ -13,7 +13,7 @@ build:
   number: 0
   noarch: "python"
   script: "cd sparkmagic && {{ PYTHON }} -m pip install . -vv"
-  skip: True  # [s390x and ppc64le]
+  skip: True  # [s390x or ppc64le]
 
 requirements:
   host:
