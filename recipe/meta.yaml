@@ -43,6 +43,7 @@ test:
     - nose
     - mock
     - pip
+    - qtconsole  # [linux and (aarch64 or ppc64le)]
   commands:
     - pip check
     - nosetests sparkmagic/sparkmagic/tests
