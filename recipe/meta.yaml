@@ -24,9 +24,11 @@ requirements:
     - autovizwidget >=0.6
     - hdijupyterutils >=0.6
     - ipykernel >=4.2.2
-    - ipython >=4.0.2
+    - ipython >=5
     - ipywidgets >5.0.0
+    - mock
     - nest-asyncio 1.5.5
+    - nose
     - notebook >=4.2
     - numpy
     - pandas >=0.17.1
