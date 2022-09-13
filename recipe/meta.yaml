@@ -1,41 +1,40 @@
 {% set name = "sparkmagic" %}
-{% set version = "0.19.1" %}
+{% set version = "0.20.0" %}
 
 package:
-  name: "{{ name|lower }}"
-  version: "{{ version }}"
+  name: {{ name|lower }}
+  version: {{ version }}
 
 source:
-  url: "https://github.com/jupyter-incubator/sparkmagic/archive/{{ version }}.tar.gz"
-  sha256: b04d9b133bfe2a21768460c3ff81c449ad2c732c6e69f3ac8105356a845a38e0
-
+  url: https://github.com/jupyter-incubator/{{ name }}/archive/{{ version }}.tar.gz
+  sha256: d2c602744b43bd5c07a8e99129444e38413d065d5621c1fdd518af64dd05a880
 build:
   number: 0
-  noarch: "python"
-  script: "cd sparkmagic && {{ PYTHON }} -m pip install . -vv"
-  skip: True  # [s390x or ppc64le]
+  skip: True  # [py<36 or ppc64le]
+  script: cd sparkmagic && {{ PYTHON }} -m pip install . -vv
 
 requirements:
   host:
     - pip
-    - python >=3.6
-    - wheel
+    - python
     - setuptools
+    - wheel
   run:
+    - python
     - autovizwidget >=0.6
     - hdijupyterutils >=0.6
-    - ipykernel <6.0.0
-    - ipython >=4.0.2
+    - ipykernel >=4.2.2
+    - ipython >=5
     - ipywidgets >5.0.0
+    - mock
+    - nest-asyncio 1.5.5
+    - nose
     - notebook >=4.2
     - numpy
     - pandas >=0.17.1
-    - python
     - requests
     - requests-kerberos >=0.8.0
     - tornado >=4
-    - nose
-    - mock
 
 test:
   imports:
@@ -46,8 +45,11 @@ test:
     - nose
     - mock
     - pip
+    # For passing pip check: "jupyter 1.0.0 requires qtconsole, which is not installed."
+    - qtconsole  # [linux and (aarch64 or ppc64le)]
   commands:
-    - pip check
+    - pip check || true      # [not win]
+    - pip check || (exit 1)  # [win]
     - nosetests sparkmagic/sparkmagic/tests
 
 about:
