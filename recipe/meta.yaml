@@ -9,8 +9,8 @@ source:
   url: https://github.com/jupyter-incubator/{{ name }}/archive/{{ version }}.tar.gz
   sha256: d2c602744b43bd5c07a8e99129444e38413d065d5621c1fdd518af64dd05a880
 build:
-  number: 0
-  skip: True  # [py<36 or ppc64le]
+  number: 1
+  skip: True  # [py<36]
   script: cd sparkmagic && {{ PYTHON }} -m pip install . -vv
 
 requirements:
@@ -46,7 +46,7 @@ test:
     - mock
     - pip
     # For passing pip check: "jupyter 1.0.0 requires qtconsole, which is not installed."
-    - qtconsole  # [linux and (aarch64 or ppc64le)]
+    - qtconsole  # [linux and (aarch64)]
   commands:
     - pip check || true      # [not win]
     - pip check || (exit 1)  # [win]
