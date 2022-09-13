@@ -45,7 +45,8 @@ test:
     - nose
     - mock
     - pip
-    - qtconsole  # [linux and (aarch64 or ppc64le)]
+    # For passing pip check: "jupyter 1.0.0 requires qtconsole, which is not installed."
+    - qtconsole  # [linux and (aarch64 or ppc64le or s390x)]
   commands:
     - pip check
     - nosetests sparkmagic/sparkmagic/tests
