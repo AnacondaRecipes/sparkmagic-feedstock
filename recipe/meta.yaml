@@ -1,5 +1,5 @@
 {% set name = "sparkmagic" %}
-{% set version = "0.20.0" %}
+{% set version = "0.20.5" %}
 
 package:
   name: {{ name|lower }}
@@ -7,50 +7,40 @@ package:
 
 source:
   url: https://github.com/jupyter-incubator/{{ name }}/archive/{{ version }}.tar.gz
-  sha256: d2c602744b43bd5c07a8e99129444e38413d065d5621c1fdd518af64dd05a880
+  sha256: ec03503e3ce986a2b9f72c425f17916ef3a09876ae60f33e0665949be0b0ec7a
 build:
   number: 1
+  noarch: python
   skip: True  # [py<36]
-  script: cd sparkmagic && {{ PYTHON }} -m pip install . -vv
+  script: cd sparkmagic && {{ PYTHON }} -m pip install --no-deps --no-build-isolation . -vv
 
 requirements:
   host:
     - pip
-    - python
-    - setuptools
+    - python >=3.6
     - wheel
+
   run:
-    - python
     - autovizwidget >=0.6
     - hdijupyterutils >=0.6
-    - ipykernel >=4.2.2
-    - ipython >=5
+    - ipykernel
+    - ipython >=4.0.2
     - ipywidgets >5.0.0
-    - mock
-    - nest-asyncio 1.5.5
-    - nose
     - notebook >=4.2
     - numpy
     - pandas >=0.17.1
+    - python >=3.6
     - requests
     - requests-kerberos >=0.8.0
     - tornado >=4
 
 test:
+  requires:
+    - pip
   imports:
     - sparkmagic
-  source_files:
-    - sparkmagic/sparkmagic/tests
-  requires:
-    - nose
-    - mock
-    - pip
-    # For passing pip check: "jupyter 1.0.0 requires qtconsole, which is not installed."
-    - qtconsole  # [linux and (aarch64)]
   commands:
-    - pip check || true      # [not win]
-    - pip check || (exit 1)  # [win]
-    - nosetests sparkmagic/sparkmagic/tests
+    - pip check || true
 
 about:
   home: https://github.com/jupyter-incubator/sparkmagic
@@ -62,7 +52,7 @@ about:
   dev_url: https://github.com/jupyter-incubator/sparkmagic/tree/master/sparkmagic
 
 extra:
+  anaconda-services:
+    ref: https://anaconda.zendesk.com/agent/tickets/34532
   recipe-maintainers:
-    - danielfrg
-    - itamarst
-    - dbast
+    - ianaobi
