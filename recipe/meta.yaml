@@ -12,12 +12,13 @@ build:
   number: 1
   noarch: python
   skip: True  # [py<36]
-  script: cd sparkmagic && {{ PYTHON }} -m pip install . -vv
+  script: cd sparkmagic && {{ PYTHON }} -m pip install --no-deps --no-build-isolation . -vv
 
 requirements:
   host:
     - pip
     - python >=3.6
+    - wheel
 
   run:
     - autovizwidget >=0.6
@@ -51,7 +52,7 @@ about:
   dev_url: https://github.com/jupyter-incubator/sparkmagic/tree/master/sparkmagic
 
 extra:
+  anaconda-services:
+    ref: https://anaconda.zendesk.com/agent/tickets/34532
   recipe-maintainers:
-    - danielfrg
-    - itamarst
-    - dbast
+    - ianaobi
