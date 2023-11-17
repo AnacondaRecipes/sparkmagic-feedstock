@@ -1,5 +1,5 @@
 {% set name = "sparkmagic" %}
-{% set version = "0.20.0" %}
+{% set version = "0.21.0" %}
 
 package:
   name: {{ name|lower }}
@@ -7,11 +7,10 @@ package:
 
 source:
   url: https://github.com/jupyter-incubator/{{ name }}/archive/{{ version }}.tar.gz
-  sha256: d2c602744b43bd5c07a8e99129444e38413d065d5621c1fdd518af64dd05a880
+  sha256: edef54c62ef9e477c3cb5bccbaadf00737d5e0b8ba6d060263d205ae33507ea3
 build:
-  number: 1
-  skip: True  # [py<36]
-  script: cd sparkmagic && {{ PYTHON }} -m pip install . -vv
+  number: 0
+  script: cd sparkmagic && {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
 requirements:
   host:
@@ -21,20 +20,18 @@ requirements:
     - wheel
   run:
     - python
-    - autovizwidget >=0.6
     - hdijupyterutils >=0.6
-    - ipykernel >=4.2.2
-    - ipython >=5
-    - ipywidgets >5.0.0
-    - mock
-    - nest-asyncio 1.5.5
-    - nose
-    - notebook >=4.2
+    - autovizwidget >=0.6
+    - ipython >=4.0.2
+    - pandas >=0.17.1,<2.0.0
     - numpy
-    - pandas >=0.17.1
     - requests
-    - requests-kerberos >=0.8.0
+    - ipykernel >=4.2.2
+    - ipywidgets >5.0.0
+    - notebook >=4.2
     - tornado >=4
+    - requests-kerberos >=0.8.0
+    - nest-asyncio >1.5.5
 
 test:
   imports:
@@ -42,15 +39,14 @@ test:
   source_files:
     - sparkmagic/sparkmagic/tests
   requires:
-    - nose
+    - pytest
     - mock
     - pip
-    # For passing pip check: "jupyter 1.0.0 requires qtconsole, which is not installed."
-    - qtconsole  # [linux and (aarch64)]
   commands:
-    - pip check || true      # [not win]
-    - pip check || (exit 1)  # [win]
-    - nosetests sparkmagic/sparkmagic/tests
+    - pip check
+    # test_execute_cell_for_user_ipykernel5 fails on py310, but we don't even provide ipykernel5
+    # test_execute_cell_for_user_ipykernel6 passes as expected
+    - pytest sparkmagic/sparkmagic/tests -k "not test_execute_cell_for_user_ipykernel5"
 
 about:
   home: https://github.com/jupyter-incubator/sparkmagic
