@@ -55,6 +55,10 @@ about:
   license: BSD-3-Clause
   license_family: BSD
   summary: Jupyter magics and kernels for working with remote Spark clusters
+  description: |
+    Sparkmagic is a set of tools for interactively working with remote Spark
+    clusters in Jupyter notebooks. Sparkmagic interacts with remote Spark
+    clusters through a REST server.
   license_file: LICENSE.md
   doc_url: https://github.com/jupyter-incubator/sparkmagic#readme
   dev_url: https://github.com/jupyter-incubator/sparkmagic/tree/master/sparkmagic
